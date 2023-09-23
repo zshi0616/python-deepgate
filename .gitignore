@@ -1,0 +1,12 @@
+*inmemory*
+*__pycache__
+*.pyc
+.vscode
+
+build
+dist
+*.egg-info
+
+exp
+tmp
+data
