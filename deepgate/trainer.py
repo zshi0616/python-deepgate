@@ -44,6 +44,22 @@ class Trainer():
         self.readout_rc = MLP(emb_dim * 2, 32, num_layer=3, p_drop=0.2, norm_layer='batchnorm', sigmoid=True).to(self.device)
         self.model_epoch = 0
         
+    def set_training_args(self, prob_rc_func_weight=[3.0, 1.0, 2.0], lr=1e-4, lr_step=-1, device='cpu'):
+        if prob_rc_func_weight != self.prob_rc_func_weight:
+            print('[INFO] Update prob_rc_func_weight from {} to {}'.format(self.prob_rc_func_weight, prob_rc_func_weight))
+            self.prob_rc_func_weight = prob_rc_func_weight
+        if lr != self.lr:
+            print('[INFO] Update learning rate from {} to {}'.format(self.lr, lr))
+            self.lr = lr
+            for param_group in self.optimizer.param_groups:
+                param_group['lr'] = self.lr
+        if lr_step != self.lr_step:
+            print('[INFO] Update learning rate step from {} to {}'.format(self.lr_step, lr_step))
+            self.lr_step = lr_step
+        if device != self.device:
+            print('[INFO] Update device from {} to {}'.format(self.device, device))
+            self.device = device
+        
     def save(self, path):
         data = {
             'epoch': self.model_epoch, 
@@ -78,7 +94,7 @@ class Trainer():
         
         return prob_loss, rc_loss, func_loss
     
-    def train(self, num_epoch, train_dataset, val_dataset, lr_step=-1):
+    def train(self, num_epoch, train_dataset, val_dataset):
         batch_time = AverageMeter()
         prob_loss_stats, rc_loss_stats, func_loss_stats = AverageMeter(), AverageMeter(), AverageMeter()
         self.log_file = open(self.log_path, 'w')
@@ -121,8 +137,9 @@ class Trainer():
             
             # Learning rate decay
             self.model_epoch += 1
-            if lr_step > 0 and self.model_epoch % lr_step == 0:
+            if self.lr_step > 0 and self.model_epoch % self.lr_step == 0:
                 self.lr *= 0.1
+                print('[INFO] Learning rate decay to {:.4f}'.format(self.lr))
                 for param_group in self.optimizer.param_groups:
                     param_group['lr'] = self.lr
             
