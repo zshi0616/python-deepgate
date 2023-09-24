@@ -18,7 +18,7 @@ if __name__ == '__main__':
     print('[INFO] Create Model and Trainer')
     model = deepgate.Model()
     
-    trainer = deepgate.Trainer(model)
+    trainer = deepgate.Trainer(model, device=device)
     trainer.set_training_args(prob_rc_func_weight=[1.0, 0.0, 0.0], lr=1e-4, lr_step=30)
     print('[INFO] Stage 1 Training ...')
     trainer.train(num_epochs, train_dataset, val_dataset)
