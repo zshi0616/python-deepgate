@@ -1,6 +1,6 @@
 # DeepGate2: Functionality-Aware Circuit Representation Learning
 
-Code repository for the paper:  
+Official code repository for the paper:  
 [**DeepGate2: Functionality-Aware Circuit Representation Learning**](https://arxiv.org/abs/2305.16373)
 
 Accepted by ICCAD23, Thank you all for support !!!
