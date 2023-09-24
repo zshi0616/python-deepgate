@@ -128,9 +128,10 @@ class Trainer():
                             func_loss * self.prob_rc_func_weight[2]
                     loss /= sum(self.prob_rc_func_weight)
                     loss = loss.mean()
-                    self.optimizer.zero_grad()
-                    loss.backward()
-                    self.optimizer.step()
+                    if phase == 'train':
+                        self.optimizer.zero_grad()
+                        loss.backward()
+                        self.optimizer.step()
                     # Print and save log
                     batch_time.update(time.time() - time_stamp)
                     prob_loss_stats.update(prob_loss.item())
