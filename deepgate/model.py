@@ -48,13 +48,14 @@ class Model(nn.Module):
         # Readout 
         self.readout_prob = MLP(self.dim_hidden, self.dim_mlp, 1, num_layer=3, p_drop=0.2, norm_layer='batchnorm', act_layer='relu')
 
-        # consider the embedding for the LSTM/GRU model initialized by non-zeros
-        self.one = torch.ones(1)
-        # self.hs_emd_int = nn.Linear(1, self.dim_hidden)
-        self.hf_emd_int = nn.Linear(1, self.dim_hidden)
-        self.one.requires_grad = False
+        # # consider the embedding for the LSTM/GRU model initialized by non-zeros
+        # self.one = torch.ones(1)
+        # # self.hs_emd_int = nn.Linear(1, self.dim_hidden)
+        # self.hf_emd_int = nn.Linear(1, self.dim_hidden)
+        # self.one.requires_grad = False
 
     def forward(self, G):
+        device = next(self.parameters()).device
         num_nodes = len(G.gate)
         num_layers_f = max(G.forward_level).item() + 1
         num_layers_b = max(G.backward_level).item() + 1
@@ -68,8 +69,11 @@ class Model(nn.Module):
             max_sim = 0
         
         # initialize the function hidden state
-        hf = self.hf_emd_int(self.one).view(1, -1) # (1 x 1 x dim_hidden)
-        hf = hf.repeat(num_nodes, 1) # (1 x num_nodes x dim_hidden)
+        # hf = self.hf_emd_int(self.one).view(1, -1) # (1 x 1 x dim_hidden)
+        # hf = hf.repeat(num_nodes, 1) # (1 x num_nodes x dim_hidden)
+        hf = torch.zeros(num_nodes, self.dim_hidden)
+        hs = hs.to(device)
+        hf = hf.to(device)
         
         edge_index = G.edge_index
 
@@ -86,6 +90,8 @@ class Model(nn.Module):
                 l_and_node = G.forward_index[layer_mask & and_mask]
                 if l_and_node.size(0) > 0:
                     and_edge_index, and_edge_attr = subgraph(l_and_node, edge_index, dim=1)
+                    
+                    
                     # Update structure hidden state
                     msg = self.aggr_and_strc(hs, and_edge_index, and_edge_attr)
                     and_msg = torch.index_select(msg, dim=0, index=l_and_node)

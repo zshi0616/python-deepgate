@@ -26,6 +26,7 @@ class Trainer():
         self.emb_dim = emb_dim
         self.device = device
         self.lr = lr
+        self.lr_step = -1
         self.prob_rc_func_weight = prob_rc_func_weight
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
@@ -44,21 +45,29 @@ class Trainer():
         self.readout_rc = MLP(emb_dim * 2, 32, num_layer=3, p_drop=0.2, norm_layer='batchnorm', sigmoid=True).to(self.device)
         self.model_epoch = 0
         
-    def set_training_args(self, prob_rc_func_weight=[3.0, 1.0, 2.0], lr=1e-4, lr_step=-1, device='cpu'):
-        if prob_rc_func_weight != self.prob_rc_func_weight:
+        # Print
+        print('[INFO] Device: {}'.format(self.device))
+        
+    def set_training_args(self, prob_rc_func_weight=[], lr=-1, lr_step=-1, device='null'):
+        if len(prob_rc_func_weight) == 3 and prob_rc_func_weight != self.prob_rc_func_weight:
             print('[INFO] Update prob_rc_func_weight from {} to {}'.format(self.prob_rc_func_weight, prob_rc_func_weight))
             self.prob_rc_func_weight = prob_rc_func_weight
-        if lr != self.lr:
+        if lr > 0 and lr != self.lr:
             print('[INFO] Update learning rate from {} to {}'.format(self.lr, lr))
             self.lr = lr
             for param_group in self.optimizer.param_groups:
                 param_group['lr'] = self.lr
-        if lr_step != self.lr_step:
+        if lr_step > 0 and lr_step != self.lr_step:
             print('[INFO] Update learning rate step from {} to {}'.format(self.lr_step, lr_step))
             self.lr_step = lr_step
-        if device != self.device:
+        if device != 'null' and device != self.device:
             print('[INFO] Update device from {} to {}'.format(self.device, device))
             self.device = device
+            self.model = self.model.to(self.device)
+            self.reg_loss = self.reg_loss.to(self.device)
+            self.clf_loss = self.clf_loss.to(self.device)
+            self.optimizer = self.optimizer
+            self.readout_rc = self.readout_rc.to(self.device)
         
     def save(self, path):
         data = {
@@ -103,9 +112,11 @@ class Trainer():
                 if phase == 'train':
                     dataset = train_dataset
                     self.model.train()
+                    self.model.to(self.device)
                 else:
                     dataset = val_dataset
                     self.model.eval()
+                    self.model.to(self.device)
                     torch.cuda.empty_cache()
                 bar = Bar('{} {:}/{:}'.format(phase, epoch, num_epoch), max=len(dataset))
                 for iter_id, batch in enumerate(dataset):
