@@ -2,11 +2,13 @@
 
 Code repository for the paper:  
 [**DeepGate2: Functionality-Aware Circuit Representation Learning**](https://arxiv.org/abs/2305.16373)
+
 Accepted by ICCAD23, Thank you all for support !!!
 
 Zhengyuan Shi, Hongyang Pan, Sadaf Khan, Min Li, Yi Liu, Junhua Huang, Hui-Ling Zhen, Mingxuan Yuan, Zhufei Chu and Qiang Xu
 
 DeepGate2 can serve as a circuit encoder to embed logic circuit into gate-level embedding vectors. Such general embeddings with rich structural and functional information can be applied to various downstream tasks, including testability analysis, SAT problem solving and logic synthesis. If you plan to explore more potential downstream tasks, please feel free to discuss with us (Email: zyshi21@cse.cuhk.edu.hk). We are looking forward to collaborate with you! 
+
 DeepGate2 可以用作逻辑电路的Encoder，能够将逻辑电路的每个节点表示为一个embedding vector。这种富含结构和功能的向量能够被用于下游任务，包括但不限于：可测试性分析、SAT问题求解和逻辑综合。如果您希望探索更多可能，欢迎与我们讨论(邮箱：zyshi21@cse.cuhk.edu.hk)，期待与您合作！
 
 ## Abstract 
