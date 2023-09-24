@@ -42,10 +42,11 @@ class Trainer():
         # Model
         self.model = model.to(self.device)
         self.readout_rc = MLP(emb_dim * 2, 32, num_layer=3, p_drop=0.2, norm_layer='batchnorm', sigmoid=True).to(self.device)
-    
-    def save(self, epoch, path):
+        self.model_epoch = 0
+        
+    def save(self, path):
         data = {
-            'epoch': epoch, 
+            'epoch': self.model_epoch, 
             'state_dict': self.model.state_dict(),
             'optimizer': self.optimizer.state_dict()
         }
@@ -54,7 +55,7 @@ class Trainer():
     def load(self, path):
         checkpoint = torch.load(path, map_location=lambda storage, loc: storage)
         self.optimizer.load_state_dict(checkpoint['optimizer'])
-        epoch = checkpoint['epoch']
+        self.model_epoch = checkpoint['epoch']
         self.model.load(path)
         return path
         
@@ -77,7 +78,7 @@ class Trainer():
         
         return prob_loss, rc_loss, func_loss
     
-    def train(self, num_epoch, train_dataset, val_dataset):
+    def train(self, num_epoch, train_dataset, val_dataset, lr_step=-1):
         batch_time = AverageMeter()
         prob_loss_stats, rc_loss_stats, func_loss_stats = AverageMeter(), AverageMeter(), AverageMeter()
         self.log_file = open(self.log_path, 'w')
@@ -117,6 +118,13 @@ class Trainer():
                 self.log_file.write('{}| Epoch: {:}/{:} |Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} |Net: {:.2f}s\n'.format(
                     phase, epoch, num_epoch, prob_loss_stats.avg, rc_loss_stats.avg, func_loss_stats.avg, batch_time.avg))
                 bar.finish()
+            
+            # Learning rate decay
+            self.model_epoch += 1
+            if lr_step > 0 and self.model_epoch % lr_step == 0:
+                self.lr *= 0.1
+                for param_group in self.optimizer.param_groups:
+                    param_group['lr'] = self.lr
             
         self.log_file.close()
                 
