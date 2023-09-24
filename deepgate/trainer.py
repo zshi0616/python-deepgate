@@ -8,8 +8,8 @@ from torch import nn
 import time
 from progress.bar import Bar
 
-from arch.mlp import MLP
-from utils.utils import zero_normalization, AverageMeter
+from .arch.mlp import MLP
+from .utils.utils import zero_normalization, AverageMeter
 
 class Trainer():
     def __init__(self,
@@ -109,8 +109,8 @@ class Trainer():
                     rc_loss_stats.update(rc_loss.item())
                     func_loss_stats.update(func_loss.item())
                     Bar.suffix = '[{:}/{:}]|Tot: {total:} |ETA: {eta:} '.format(iter_id, len(dataset), total=bar.elapsed_td, eta=bar.eta_td)
-                    Bar.suffix += '|Prob: {:.4f} |RC: {:.4f} |Func: {:.4f}'.format(prob_loss_stats.avg, rc_loss_stats.avg, func_loss_stats.avg)
-                    Bar.suffix += '|Net: {:.2f}s'.format(batch_time.avg)
+                    Bar.suffix += '|Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} '.format(prob_loss_stats.avg, rc_loss_stats.avg, func_loss_stats.avg)
+                    Bar.suffix += '|Net: {:.2f}s '.format(batch_time.avg)
                     bar.next()
                 if phase == 'train':
                     self.save(epoch, os.path.join(self.log_dir, 'model_last.pth'))

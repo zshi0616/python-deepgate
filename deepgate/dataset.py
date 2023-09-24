@@ -12,9 +12,9 @@ import copy
 from torch_geometric.data import Data
 from torch_geometric.data import InMemoryDataset
 
-from utils.data_utils import construct_node_feature, add_skip_connection, add_edge_attr, one_hot
-from utils.data_utils import read_npz_file
-from utils.dag_utils import return_order_info
+from .utils.data_utils import construct_node_feature, add_skip_connection, add_edge_attr, one_hot
+from .utils.data_utils import read_npz_file
+from .utils.dag_utils import return_order_info
 
 class OrderedData(Data):
     def __init__(self, edge_index=None, x=None, y=None, \

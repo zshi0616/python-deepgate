@@ -23,9 +23,8 @@ def write_file(filename, dir, y):
     f.close()
 
 
-def read_npz_file(filename, dir):
-    path = os.path.join(dir, filename)
-    data = np.load(path, allow_pickle=True)
+def read_npz_file(filepath):
+    data = np.load(filepath, allow_pickle=True)
     return data
 
 
@@ -75,7 +74,7 @@ def one_hot(idx, length):
 
 
 
-def construct_node_feature(x, no_node_cop, node_reconv, num_gate_types):
+def construct_node_feature(x, num_gate_types):
     # the one-hot embedding for the gate types
     gate_list = x[:, 1]
     gate_list = np.float32(gate_list)

@@ -6,12 +6,12 @@ import torch
 import os
 from torch import nn
 from torch.nn import LSTM, GRU
-from utils.dag_utils import subgraph, custom_backward_subgraph
-from utils.utils import generate_hs_init
+from .utils.dag_utils import subgraph, custom_backward_subgraph
+from .utils.utils import generate_hs_init
 
-from arch.mlp import MLP
-from arch.mlp_aggr import MlpAggr
-from arch.tfmlp import TFMlpAggr
+from .arch.mlp import MLP
+from .arch.mlp_aggr import MlpAggr
+from .arch.tfmlp import TFMlpAggr
 
 class Model(nn.Module):
     '''

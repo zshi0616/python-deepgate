@@ -111,7 +111,7 @@ def cnf_to_xdata(cnf_filename, tmp_aig_filename, tmp_aag_filename, gate_to_index
     
     return x_data, edge_index
 
-def aig_to_xdata(aig_filename, tmp_aag_filename, gate_to_index):
+def aig_to_xdata(aig_filename, tmp_aag_filename, gate_to_index={'PI': 0, 'AND': 1, 'NOT': 2}):
     aig2aag_cmd = 'aigtoaig {} {}'.format(aig_filename, tmp_aag_filename)
     info = os.popen(aig2aag_cmd).readlines()
     

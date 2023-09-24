@@ -5,5 +5,5 @@ setup(
     description= 'DeepGate: Learn Logic Gate Representation', 
     author = 'Zhengyuan (Stone) Shi', 
     author_email= 'zyshi21@cse.cuhk.edu.hk', 
-    packages = find_packages(),
+    packages = find_packages(exclude=['examples', 'data']),
 )
