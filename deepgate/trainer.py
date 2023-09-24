@@ -141,7 +141,7 @@ class Trainer():
                     Bar.suffix += '|Net: {:.2f}s '.format(batch_time.avg)
                     bar.next()
                 if phase == 'train':
-                    self.save(epoch, os.path.join(self.log_dir, 'model_last.pth'))
+                    self.save(os.path.join(self.log_dir, 'model_last.pth'))
                 self.log_file.write('{}| Epoch: {:}/{:} |Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} |Net: {:.2f}s\n'.format(
                     phase, epoch, num_epoch, prob_loss_stats.avg, rc_loss_stats.avg, func_loss_stats.avg, batch_time.avg))
                 bar.finish()
