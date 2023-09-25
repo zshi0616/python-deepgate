@@ -31,6 +31,11 @@ unzip train.zip
 python3 examples/train.py
 ```
 
+## Generate AIG Embedding Vectors 
+```sh 
+python3 examples/feature_extract.py
+```
+
 ## Cite DeepGate2
 If DeepGate Family could help your project, please cite our work: 
 ```sh

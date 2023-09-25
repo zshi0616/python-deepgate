@@ -159,3 +159,8 @@ class Model(nn.Module):
                 print('No param {}.'.format(k))
                 state_dict[k] = model_state_dict[k]
         self.load_state_dict(state_dict, strict=False)
+        
+    def load_pretrained(self, pretrained_model_path = ''):
+        if pretrained_model_path == '':
+            pretrained_model_path = os.path.join(os.path.dirname(__file__), 'pretrained', 'model.pth')
+        self.load(pretrained_model_path)

@@ -6,9 +6,8 @@ import deepgate
 import torch
 
 if __name__ == '__main__':
-    model_path = './exp/default/model_last.pth'
     model = deepgate.Model()    # Create DeepGate
-    model.load(model_path)      # Load pretrained model
+    model.load_pretrained()      # Load pretrained model
     
     aig_path = './examples/test.aiger'
     parser = deepgate.AigParser()   # Create AigParser
