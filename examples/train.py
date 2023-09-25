@@ -9,8 +9,7 @@ if __name__ == '__main__':
     data_dir = './data/train'
     circuit_path = './data/train/graphs.npz'
     label_path = './data/train/labels.npz'
-    num_epochs = 80
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    num_epochs = 60
     
     print('[INFO] Parse Dataset')
     dataset = deepgate.NpzParser(data_dir, circuit_path, label_path)
@@ -18,7 +17,7 @@ if __name__ == '__main__':
     print('[INFO] Create Model and Trainer')
     model = deepgate.Model()
     
-    trainer = deepgate.Trainer(model, device=device)
+    trainer = deepgate.Trainer(model, distributed=True)
     trainer.set_training_args(prob_rc_func_weight=[1.0, 0.0, 0.0], lr=1e-4, lr_step=30)
     print('[INFO] Stage 1 Training ...')
     trainer.train(num_epochs, train_dataset, val_dataset)

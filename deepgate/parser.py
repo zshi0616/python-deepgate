@@ -23,8 +23,7 @@ class NpzParser():
         Parse the npz file into an inmemory torch_geometric.data.Data object
     '''
     def __init__(self, data_dir, circuit_path, label_path, \
-                 random_shuffle=True, trainval_split=0.9, \
-                 batch_size=32, num_workers=4): 
+                 random_shuffle=True, trainval_split=0.9): 
         self.data_dir = data_dir
         dataset = self.inmemory_dataset(data_dir, circuit_path, label_path)
         if random_shuffle:
@@ -34,8 +33,8 @@ class NpzParser():
         training_cutoff = int(data_len * trainval_split)
         self.train_dataset = dataset[:training_cutoff]
         self.val_dataset = dataset[training_cutoff:]
-        self.train_dataset = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=num_workers)
-        self.val_dataset = DataLoader(self.val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+        # self.train_dataset = DataLoader(self.train_dataset, batch_size=batch_size, shuffle=True, drop_last=True, num_workers=num_workers)
+        # self.val_dataset = DataLoader(self.val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
         
     def get_dataset(self):
         return self.train_dataset, self.val_dataset

@@ -28,7 +28,8 @@ unzip train.zip
 
 ## Pretrain DeepGate2
 ```sh
-python3 examples/train.py
+NUM_PROC=2
+python3 -m torch.distributed.launch --nproc_per_node=$NUM_PROC examples/train.py
 ```
 
 ## Generate AIG Embedding Vectors 

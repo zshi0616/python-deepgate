@@ -4,20 +4,22 @@ from __future__ import print_function
 
 import deepgate
 import torch
+import os 
+
+os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
 
 if __name__ == '__main__':
     data_dir = './data/train'
     circuit_path = './data/train/graphs.npz'
     label_path = './data/train/labels.npz'
     num_epochs = 60
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     print('[INFO] Parse Dataset')
     dataset = deepgate.NpzParser(data_dir, circuit_path, label_path)
     train_dataset, val_dataset = dataset.get_dataset()
     print('[INFO] Create Model and Trainer')
     model = deepgate.Model()
-    trainer = deepgate.Trainer(model, device=device)
+    trainer = deepgate.Trainer(model, distributed=True)
     checkpoint_path = './exp/default/model_last.pth'
     print('[INFO] Load checkpoint in : ', checkpoint_path)
     trainer.load(checkpoint_path)

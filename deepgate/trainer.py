@@ -7,9 +7,11 @@ import torch
 from torch import nn
 import time
 from progress.bar import Bar
+from torch_geometric.loader import DataLoader
 
 from .arch.mlp import MLP
 from .utils.utils import zero_normalization, AverageMeter
+from .utils.logger import Logger
 
 class Trainer():
     def __init__(self,
@@ -19,7 +21,9 @@ class Trainer():
                  lr = 1e-4,
                  prob_rc_func_weight = [3.0, 1.0, 2.0],
                  emb_dim = 128, 
-                 device = 'cpu'
+                 device = 'cpu', 
+                 batch_size=16, num_workers=4, 
+                 distributed = False
                  ):
         super(Trainer, self).__init__()
         # Config
@@ -34,6 +38,25 @@ class Trainer():
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
         self.log_path = os.path.join(self.log_dir, 'log.txt')
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+        self.distributed = distributed
+        
+        # Distributed Training 
+        self.local_rank = 0
+        if self.distributed:
+            if 'LOCAL_RANK' in os.environ:
+                self.local_rank = int(os.environ['LOCAL_RANK'])
+            self.device = 'cuda:%d' % self.local_rank
+            torch.cuda.set_device(self.local_rank)
+            torch.distributed.init_process_group(backend='nccl', init_method='env://')
+            self.world_size = torch.distributed.get_world_size()
+            self.rank = torch.distributed.get_rank()
+            print('Training in distributed mode. Device {}, Process {:}, total {:}.'.format(
+                self.device, self.rank, self.world_size
+            ))
+        else:
+            print('Training in single device: ', self.device)
         
         # Loss and Optimizer
         self.reg_loss = nn.L1Loss().to(self.device)
@@ -45,8 +68,9 @@ class Trainer():
         self.readout_rc = MLP(emb_dim * 2, 32, num_layer=3, p_drop=0.2, norm_layer='batchnorm', sigmoid=True).to(self.device)
         self.model_epoch = 0
         
-        # Print
-        print('[INFO] Device: {}'.format(self.device))
+        # Logger
+        if self.local_rank == 0:
+            self.logger = Logger(self.log_path)
         
     def set_training_args(self, prob_rc_func_weight=[], lr=-1, lr_step=-1, device='null'):
         if len(prob_rc_func_weight) == 3 and prob_rc_func_weight != self.prob_rc_func_weight:
@@ -104,9 +128,31 @@ class Trainer():
         return prob_loss, rc_loss, func_loss
     
     def train(self, num_epoch, train_dataset, val_dataset):
+        # Distribute Dataset
+        if self.distributed:
+            train_sampler = torch.utils.data.distributed.DistributedSampler(
+                train_dataset,
+                num_replicas=self.world_size,
+                rank=self.rank
+            )
+            val_sampler = torch.utils.data.distributed.DistributedSampler(
+                val_dataset,
+                num_replicas=self.world_size,
+                rank=self.rank
+            )
+            train_dataset = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=False, drop_last=False,
+                                    num_workers=self.num_workers, sampler=train_sampler)
+            val_dataset = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers,
+                                    sampler=val_sampler)
+        else:
+            train_dataset = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, drop_last=True, num_workers=self.num_workers)
+            val_dataset = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=True, drop_last=True, num_workers=self.num_workers)
+        
+        # AverageMeter
         batch_time = AverageMeter()
         prob_loss_stats, rc_loss_stats, func_loss_stats = AverageMeter(), AverageMeter(), AverageMeter()
-        self.log_file = open(self.log_path, 'w')
+        
+        # Train
         for epoch in range(num_epoch): 
             for phase in ['train', 'val']:
                 if phase == 'train':
@@ -118,7 +164,8 @@ class Trainer():
                     self.model.eval()
                     self.model.to(self.device)
                     torch.cuda.empty_cache()
-                bar = Bar('{} {:}/{:}'.format(phase, epoch, num_epoch), max=len(dataset))
+                if self.local_rank == 0:
+                    bar = Bar('{} {:}/{:}'.format(phase, epoch, num_epoch), max=len(dataset))
                 for iter_id, batch in enumerate(dataset):
                     batch = batch.to(self.device)
                     time_stamp = time.time()
@@ -137,23 +184,24 @@ class Trainer():
                     prob_loss_stats.update(prob_loss.item())
                     rc_loss_stats.update(rc_loss.item())
                     func_loss_stats.update(func_loss.item())
-                    Bar.suffix = '[{:}/{:}]|Tot: {total:} |ETA: {eta:} '.format(iter_id, len(dataset), total=bar.elapsed_td, eta=bar.eta_td)
-                    Bar.suffix += '|Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} '.format(prob_loss_stats.avg, rc_loss_stats.avg, func_loss_stats.avg)
-                    Bar.suffix += '|Net: {:.2f}s '.format(batch_time.avg)
-                    bar.next()
+                    if self.local_rank == 0:
+                        Bar.suffix = '[{:}/{:}]|Tot: {total:} |ETA: {eta:} '.format(iter_id, len(dataset), total=bar.elapsed_td, eta=bar.eta_td)
+                        Bar.suffix += '|Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} '.format(prob_loss_stats.avg, rc_loss_stats.avg, func_loss_stats.avg)
+                        Bar.suffix += '|Net: {:.2f}s '.format(batch_time.avg)
+                        bar.next()
                 if phase == 'train':
                     self.save(os.path.join(self.log_dir, 'model_last.pth'))
-                self.log_file.write('{}| Epoch: {:}/{:} |Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} |Net: {:.2f}s\n'.format(
-                    phase, epoch, num_epoch, prob_loss_stats.avg, rc_loss_stats.avg, func_loss_stats.avg, batch_time.avg))
-                bar.finish()
+                if self.local_rank == 0:
+                    self.logger.write('{}| Epoch: {:}/{:} |Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} |Net: {:.2f}s\n'.format(
+                        phase, epoch, num_epoch, prob_loss_stats.avg, rc_loss_stats.avg, func_loss_stats.avg, batch_time.avg))
+                    bar.finish()
             
             # Learning rate decay
             self.model_epoch += 1
             if self.lr_step > 0 and self.model_epoch % self.lr_step == 0:
                 self.lr *= 0.1
-                print('[INFO] Learning rate decay to {:.4f}'.format(self.lr))
+                if self.local_rank == 0:
+                    print('[INFO] Learning rate decay to {:.4f}'.format(self.lr))
                 for param_group in self.optimizer.param_groups:
                     param_group['lr'] = self.lr
             
-        self.log_file.close()
-                
