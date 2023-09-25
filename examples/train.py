@@ -9,7 +9,7 @@ if __name__ == '__main__':
     data_dir = './data/train'
     circuit_path = './data/train/graphs.npz'
     label_path = './data/train/labels.npz'
-    num_epochs = 100
+    num_epochs = 80
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     print('[INFO] Parse Dataset')
