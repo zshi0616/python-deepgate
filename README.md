@@ -35,6 +35,7 @@ python3 -m torch.distributed.launch --nproc_per_node=$NUM_PROC examples/train.py
 ## Generate AIG Embedding Vectors 
 see `examples/feature_extract.py`
 ```python
+import deepgate
 model = deepgate.Model()    # Create DeepGate
 model.load_pretrained()      # Load pretrained model
 parser = deepgate.AigParser()   # Create AigParser
