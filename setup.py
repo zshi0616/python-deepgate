@@ -6,4 +6,5 @@ setup(
     author = 'Zhengyuan (Stone) Shi', 
     author_email= 'zyshi21@cse.cuhk.edu.hk', 
     packages = find_packages(exclude=['examples', 'data']),
+    include_package_data = True,
 )

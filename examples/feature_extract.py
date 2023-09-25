@@ -6,12 +6,15 @@ import deepgate
 import torch
 
 if __name__ == '__main__':
+    print('[INFO] Create and load pretrained DeepGate')
     model = deepgate.Model()    # Create DeepGate
     model.load_pretrained()      # Load pretrained model
     
     aig_path = './examples/test.aiger'
+    print('[INFO] Parse AIG: ', aig_path)
     parser = deepgate.AigParser()   # Create AigParser
     graph = parser.read_aiger(aig_path) # Parse AIG into Graph
+    print('[INFO] Get embeddings ...')
     hs, hf = model(graph)       # Model inference 
     
     # hs: structural embeddings, hf: functional embeddings

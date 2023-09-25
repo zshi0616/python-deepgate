@@ -32,8 +32,16 @@ python3 examples/train.py
 ```
 
 ## Generate AIG Embedding Vectors 
-```sh 
-python3 examples/feature_extract.py
+see `examples/feature_extract.py`
+```python
+model = deepgate.Model()    # Create DeepGate
+model.load_pretrained()      # Load pretrained model
+parser = deepgate.AigParser()   # Create AigParser
+graph = parser.read_aiger('./examples/test.aiger') # Parse AIG into Graph
+hs, hf = model(graph)       # Model inference 
+# hs: structural embeddings, hf: functional embeddings
+# hs/hf: [N, D]. N: number of gates, D: embedding dimension (default: 128)
+print(hs.shape, hf.shape)   
 ```
 
 ## Cite DeepGate2
