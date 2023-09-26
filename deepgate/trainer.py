@@ -10,7 +10,7 @@ from progress.bar import Bar
 from torch_geometric.loader import DataLoader
 
 from .arch.mlp import MLP
-from .utils.utils import zero_normalization, AverageMeter
+from .utils.utils import zero_normalization, AverageMeter, get_function_acc
 from .utils.logger import Logger
 
 class Trainer():
@@ -116,6 +116,7 @@ class Trainer():
         # Task 2: Structural Prediction
         rc_emb = torch.cat([hs[batch['rc_pair_index'][0]], hs[batch['rc_pair_index'][1]]], dim=1)
         is_rc = self.readout_rc(rc_emb)
+        is_rc = torch.clamp(is_rc, min=1e-7, max=1-1e-7)
         rc_loss = self.clf_loss(is_rc, batch['is_rc'])
         # Task 3: Functional Similarity 
         node_a = hf[batch['tt_pair_index'][0]]
@@ -124,8 +125,13 @@ class Trainer():
         emb_dis_z = zero_normalization(emb_dis)
         tt_dis_z = zero_normalization(batch['tt_dis'])
         func_loss = self.reg_loss(emb_dis_z, tt_dis_z)
+        loss_status = {
+            'prob_loss': prob_loss, 
+            'rc_loss': rc_loss,
+            'func_loss': func_loss
+        }
         
-        return prob_loss, rc_loss, func_loss
+        return hs, hf, loss_status
     
     def train(self, num_epoch, train_dataset, val_dataset):
         # Distribute Dataset
@@ -140,10 +146,10 @@ class Trainer():
                 num_replicas=self.world_size,
                 rank=self.rank
             )
-            train_dataset = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=False, drop_last=False,
+            train_dataset = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True,
                                     num_workers=self.num_workers, sampler=train_sampler)
-            val_dataset = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False, num_workers=self.num_workers,
-                                    sampler=val_sampler)
+            val_dataset = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=False, drop_last=True,
+                                     num_workers=self.num_workers, sampler=val_sampler)
         else:
             train_dataset = DataLoader(train_dataset, batch_size=self.batch_size, shuffle=True, drop_last=True, num_workers=self.num_workers)
             val_dataset = DataLoader(val_dataset, batch_size=self.batch_size, shuffle=True, drop_last=True, num_workers=self.num_workers)
@@ -151,6 +157,7 @@ class Trainer():
         # AverageMeter
         batch_time = AverageMeter()
         prob_loss_stats, rc_loss_stats, func_loss_stats = AverageMeter(), AverageMeter(), AverageMeter()
+        acc_stats = AverageMeter()
         
         # Train
         for epoch in range(num_epoch): 
@@ -170,9 +177,10 @@ class Trainer():
                     batch = batch.to(self.device)
                     time_stamp = time.time()
                     # Get loss
-                    prob_loss, rc_loss, func_loss = self.run_batch(batch)
-                    loss = prob_loss * self.prob_rc_func_weight[0] + rc_loss * self.prob_rc_func_weight[1] + \
-                            func_loss * self.prob_rc_func_weight[2]
+                    hs, hf, loss_status = self.run_batch(batch)
+                    loss = loss_status['prob_loss'] * self.prob_rc_func_weight[0] + \
+                        loss_status['rc_loss'] * self.prob_rc_func_weight[1] + \
+                        loss_status['func_loss'] * self.prob_rc_func_weight[2]
                     loss /= sum(self.prob_rc_func_weight)
                     loss = loss.mean()
                     if phase == 'train':
@@ -181,19 +189,22 @@ class Trainer():
                         self.optimizer.step()
                     # Print and save log
                     batch_time.update(time.time() - time_stamp)
-                    prob_loss_stats.update(prob_loss.item())
-                    rc_loss_stats.update(rc_loss.item())
-                    func_loss_stats.update(func_loss.item())
+                    prob_loss_stats.update(loss_status['prob_loss'].item())
+                    rc_loss_stats.update(loss_status['rc_loss'].item())
+                    func_loss_stats.update(loss_status['func_loss'].item())
+                    acc = get_function_acc(batch, hf)
+                    acc_stats.update(acc)
                     if self.local_rank == 0:
                         Bar.suffix = '[{:}/{:}]|Tot: {total:} |ETA: {eta:} '.format(iter_id, len(dataset), total=bar.elapsed_td, eta=bar.eta_td)
                         Bar.suffix += '|Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} '.format(prob_loss_stats.avg, rc_loss_stats.avg, func_loss_stats.avg)
+                        Bar.suffix += '|Acc: {:.2f}%% '.format(acc*10)
                         Bar.suffix += '|Net: {:.2f}s '.format(batch_time.avg)
                         bar.next()
                 if phase == 'train':
                     self.save(os.path.join(self.log_dir, 'model_last.pth'))
                 if self.local_rank == 0:
-                    self.logger.write('{}| Epoch: {:}/{:} |Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} |Net: {:.2f}s'.format(
-                        phase, epoch, num_epoch, prob_loss_stats.avg, rc_loss_stats.avg, func_loss_stats.avg, batch_time.avg))
+                    self.logger.write('{}| Epoch: {:}/{:} |Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} |ACC: {:.4f} |Net: {:.2f}s'.format(
+                        phase, epoch, num_epoch, prob_loss_stats.avg, rc_loss_stats.avg, func_loss_stats.avg, acc_stats.avg, batch_time.avg))
                     bar.finish()
             
             # Learning rate decay
