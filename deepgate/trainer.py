@@ -197,7 +197,7 @@ class Trainer():
                     if self.local_rank == 0:
                         Bar.suffix = '[{:}/{:}]|Tot: {total:} |ETA: {eta:} '.format(iter_id, len(dataset), total=bar.elapsed_td, eta=bar.eta_td)
                         Bar.suffix += '|Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} '.format(prob_loss_stats.avg, rc_loss_stats.avg, func_loss_stats.avg)
-                        Bar.suffix += '|Acc: {:.2f}%% '.format(acc*10)
+                        Bar.suffix += '|Acc: {:.2f}%% '.format(acc*100)
                         Bar.suffix += '|Net: {:.2f}s '.format(batch_time.avg)
                         bar.next()
                 if phase == 'train':

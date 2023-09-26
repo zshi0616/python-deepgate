@@ -7,12 +7,6 @@ import os
 import time
 import sys
 import torch
-USE_TENSORBOARD = True
-try:
-    import tensorboardX
-    print('Using tensorboardX')
-except:
-    USE_TENSORBOARD = False
 
 
 class Logger(object):
