@@ -192,7 +192,7 @@ class Trainer():
                 if phase == 'train':
                     self.save(os.path.join(self.log_dir, 'model_last.pth'))
                 if self.local_rank == 0:
-                    self.logger.write('{}| Epoch: {:}/{:} |Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} |Net: {:.2f}s\n'.format(
+                    self.logger.write('{}| Epoch: {:}/{:} |Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} |Net: {:.2f}s'.format(
                         phase, epoch, num_epoch, prob_loss_stats.avg, rc_loss_stats.avg, func_loss_stats.avg, batch_time.avg))
                     bar.finish()
             

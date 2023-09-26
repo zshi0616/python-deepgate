@@ -19,7 +19,7 @@ if __name__ == '__main__':
     train_dataset, val_dataset = dataset.get_dataset()
     print('[INFO] Create Model and Trainer')
     model = deepgate.Model()
-    trainer = deepgate.Trainer(model, distributed=True)
+    trainer = deepgate.Trainer(model, distributed=False)
     checkpoint_path = './exp/default/model_last.pth'
     print('[INFO] Load checkpoint in : ', checkpoint_path)
     trainer.load(checkpoint_path)
