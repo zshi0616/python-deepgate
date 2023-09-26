@@ -15,9 +15,9 @@ class Logger(object):
 
     def write(self, txt):
         self.log.write(txt)
-        self.log.write('\n')
+        # self.log.write('\n')
         self.log.flush()
-        print(txt)
+        # print(txt)
 
     def close(self):
         self.log.close()

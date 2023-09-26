@@ -65,7 +65,7 @@ class Trainer():
         
         # Model
         self.model = model.to(self.device)
-        self.readout_rc = MLP(emb_dim * 2, 32, num_layer=3, p_drop=0.2, norm_layer='batchnorm', sigmoid=True).to(self.device)
+        self.readout_rc = MLP(emb_dim * 2, 32, num_layer=3, p_drop=0.1, norm_layer='batchnorm', tanh=True).to(self.device)
         self.model_epoch = 0
         
         # Logger
@@ -106,6 +106,7 @@ class Trainer():
         self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.model_epoch = checkpoint['epoch']
         self.model.load(path)
+        print('[INFO] Continue training from epoch {:}'.format(self.model_epoch))
         return path
         
     def run_batch(self, batch):
@@ -116,7 +117,7 @@ class Trainer():
         # Task 2: Structural Prediction
         rc_emb = torch.cat([hs[batch['rc_pair_index'][0]], hs[batch['rc_pair_index'][1]]], dim=1)
         is_rc = self.readout_rc(rc_emb)
-        is_rc = torch.clamp(is_rc, min=1e-7, max=1-1e-7)
+        is_rc = torch.clamp(is_rc, min=1e-6, max=1-1e-6)
         rc_loss = self.clf_loss(is_rc, batch['is_rc'])
         # Task 3: Functional Similarity 
         node_a = hf[batch['tt_pair_index'][0]]
@@ -203,7 +204,7 @@ class Trainer():
                 if phase == 'train':
                     self.save(os.path.join(self.log_dir, 'model_last.pth'))
                 if self.local_rank == 0:
-                    self.logger.write('{}| Epoch: {:}/{:} |Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} |ACC: {:.4f} |Net: {:.2f}s'.format(
+                    self.logger.write('{}| Epoch: {:}/{:} |Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} |ACC: {:.4f} |Net: {:.2f}s\n'.format(
                         phase, epoch, num_epoch, prob_loss_stats.avg, rc_loss_stats.avg, func_loss_stats.avg, acc_stats.avg, batch_time.avg))
                     bar.finish()
             
