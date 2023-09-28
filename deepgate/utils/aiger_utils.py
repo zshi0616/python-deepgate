@@ -187,7 +187,7 @@ def aig_to_xdata(aig_filename, tmp_aag_filename, gate_to_index={'PI': 0, 'AND': 
 
     return x_data, edge_index
 
-def aig_to_cnf(data, fanin_list, po_idx, gate_to_index, const_0=[], const_1=[]):
+def aig_to_cnf(data, fanin_list, po_idx, const_0=[], const_1=[], gate_to_index={'PI': 0, 'AND': 1, 'NOT': 2}):
     cnf = []
     for idx, x_data_info in enumerate(data): 
         if x_data_info[1] == gate_to_index['PI']:
@@ -212,6 +212,36 @@ def aig_to_cnf(data, fanin_list, po_idx, gate_to_index, const_0=[], const_1=[]):
     for const_1_idx in const_1:
         var = const_1_idx + 1
         cnf.append([var])
+    return cnf
+
+def xdata_to_cnf(data, fanin_list, gate_to_index={'PI':0, 'AND':1, 'NOT':2}, const_0=[], const_1=[], add_clauses=[]):
+    cnf = []
+    for idx, x_data_info in enumerate(data): 
+        if x_data_info[1] == gate_to_index['PI']:
+            continue
+        elif x_data_info[1] == gate_to_index['NOT']:
+            var_C = idx + 1
+            var_A = fanin_list[idx][0] + 1
+            cnf.append([-1 * var_C, -1 * var_A])
+            cnf.append([var_C, var_A])
+        elif x_data_info[1] == gate_to_index['AND']:
+            var_C = idx + 1
+            var_A = fanin_list[idx][0] + 1
+            var_B = fanin_list[idx][1] + 1
+            cnf.append([var_C, -1*var_A, -1*var_B])
+            cnf.append([-1*var_C, var_A])
+            cnf.append([-1*var_C, var_B])
+    # Const
+    # cnf.append([po_idx + 1])
+    for const_0_idx in const_0:
+        var = int(const_0_idx) + 1
+        cnf.append([-1 * var])
+    for const_1_idx in const_1:
+        var = int(const_1_idx) + 1
+        cnf.append([var])
+
+    # Additional clauses 
+    cnf = cnf + add_clauses
     return cnf
 
 def aigcone_to_cnf(data, fanin_list, cone_po, cone_po_val, gate_to_index):

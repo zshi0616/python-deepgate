@@ -4,28 +4,32 @@ from __future__ import print_function
 
 import deepgate
 import torch
-import os 
+import numpy as np
 
-os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
-DATA_DIR = './data/train/'
+from deepgate.utils.aiger_utils import xdata_to_cnf
+from deepgate.utils.circuit_utils import get_fanin_fanout
 
 if __name__ == '__main__':
-    circuit_path = os.path.join(DATA_DIR, 'graphs.npz')
-    label_path = os.path.join(DATA_DIR, 'labels.npz')
-    num_epochs = 40
     
-    print('[INFO] Parse Dataset')
-    dataset = deepgate.NpzParser(DATA_DIR, circuit_path, label_path)
-    train_dataset, val_dataset = dataset.get_dataset()
-    print('[INFO] Create Model and Trainer')
-    model = deepgate.Model()
-    trainer = deepgate.Trainer(model, distributed=True)
-    trainer.set_training_args(prob_rc_func_weight=[1.0, 0.0, 0.0], lr=1e-4, lr_step=30)
-    print('[INFO] Stage 1 Training ...')
-    trainer.train(num_epochs, train_dataset, val_dataset)
+    aig_path = './examples/mult_op_DEMO1_6_6_TOP3.blif.aiger'
+    print('[INFO] Parse AIG: ', aig_path)
+    parser = deepgate.AigParser()   # Create AigParser
+    graph = parser.read_aiger(aig_path) # Parse AIG into Graph
     
-    print('[INFO] Stage 2 Training ...')
-    trainer.set_training_args(prob_rc_func_weight=[8.0, 1.0, 4.0], lr=1e-4, lr_step=30)
-    trainer.train(num_epochs, train_dataset, val_dataset)
+    edge_index = np.transpose(graph.edge_index.numpy())
+    x_data = []
+    for idx in range(len(graph.x)):
+        if graph.x[idx][0] == 1:
+            gate_type = 0
+        elif graph.x[idx][1] == 1:
+            gate_type = 1
+        else:
+            gate_type = 2
+        x_data.append([idx, gate_type])
+    fanin_list, fanout_list = get_fanin_fanout(x_data, edge_index)
+    cnf = xdata_to_cnf(x_data, fanin_list, const_1=[int(graph.POs[0])])
+    
+    print(len(cnf))
     
     
+            

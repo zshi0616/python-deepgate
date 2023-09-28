@@ -134,8 +134,9 @@ class AigParser():
             x_data, edge_index, tt_dis, min_tt_dis, tt_pair_index, prob, rc_pair_index, is_rc
         )
         graph.name = circuit_name
-        graph.PIs = graph.forward_index[graph['forward_level'] == 0]
-        graph.POs = graph.backward_index[graph['backward_level'] == 0]
+        graph.PIs = graph.forward_index[(graph['forward_level'] == 0) & (graph['backward_level'] != 0)]
+        graph.POs = graph.backward_index[(graph['backward_level'] == 0) & (graph['forward_level'] != 0)]
+        graph.no_connect = graph.forward_index[(graph['forward_level'] == 0) & (graph['backward_level'] == 0)]
         
         return graph        
         
