@@ -28,7 +28,7 @@ unzip train.zip
 
 ## Pretrain DeepGate2
 ```sh
-NUM_PROC=2
+NUM_PROC=4
 python3 -m torch.distributed.launch --nproc_per_node=$NUM_PROC examples/train.py
 ```
 

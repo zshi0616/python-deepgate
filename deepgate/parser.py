@@ -83,6 +83,7 @@ class NpzParser():
                 min_tt_dis = labels[cir_name]['min_tt_dis']
                 tt_pair_index = labels[cir_name]['tt_pair_index']
                 prob = labels[cir_name]['prob']
+                
                 rc_pair_index = labels[cir_name]['rc_pair_index']
                 is_rc = labels[cir_name]['is_rc']
 

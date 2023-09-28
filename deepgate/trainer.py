@@ -22,7 +22,7 @@ class Trainer():
                  prob_rc_func_weight = [3.0, 1.0, 2.0],
                  emb_dim = 128, 
                  device = 'cpu', 
-                 batch_size=16, num_workers=4, 
+                 batch_size=32, num_workers=4, 
                  distributed = False
                  ):
         super(Trainer, self).__init__()
@@ -65,7 +65,7 @@ class Trainer():
         
         # Model
         self.model = model.to(self.device)
-        self.readout_rc = MLP(emb_dim * 2, 32, num_layer=3, p_drop=0.1, norm_layer='batchnorm', tanh=True).to(self.device)
+        self.readout_rc = MLP(emb_dim * 2, 32, 1, num_layer=3, p_drop=0.1, norm_layer='batchnorm').to(self.device)
         self.model_epoch = 0
         
         # Logger
@@ -116,9 +116,11 @@ class Trainer():
         prob_loss = self.reg_loss(prob, batch['prob'])
         # Task 2: Structural Prediction
         rc_emb = torch.cat([hs[batch['rc_pair_index'][0]], hs[batch['rc_pair_index'][1]]], dim=1)
+        # print(rc_emb)
+        rc_emb = torch.clamp(rc_emb, min=1e-7, max=1-1e-7)
         is_rc = self.readout_rc(rc_emb)
-        is_rc = torch.clamp(is_rc, min=1e-6, max=1-1e-6)
-        rc_loss = self.clf_loss(is_rc, batch['is_rc'])
+        # print(is_rc)
+        rc_loss = self.reg_loss(is_rc, batch['is_rc'])
         # Task 3: Functional Similarity 
         node_a = hf[batch['tt_pair_index'][0]]
         node_b = hf[batch['tt_pair_index'][1]]
