@@ -4,15 +4,18 @@ from __future__ import print_function
 
 import deepgate
 import torch
+import os
+
+os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
+DATA_DIR = './data/train/'
 
 if __name__ == '__main__':
-    data_dir = './data/train'
-    circuit_path = './data/train/graphs.npz'
-    label_path = './data/train/labels.npz'
+    circuit_path = os.path.join(DATA_DIR, 'graphs.npz')
+    label_path = os.path.join(DATA_DIR, 'labels.npz')
     num_epochs = 60
     
     print('[INFO] Parse Dataset')
-    dataset = deepgate.NpzParser(data_dir, circuit_path, label_path)
+    dataset = deepgate.NpzParser(DATA_DIR, circuit_path, label_path)
     train_dataset, val_dataset = dataset.get_dataset()
     print('[INFO] Create Model and Trainer')
     model = deepgate.Model()

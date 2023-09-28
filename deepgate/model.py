@@ -12,6 +12,7 @@ from .utils.utils import generate_hs_init
 from .arch.mlp import MLP
 from .arch.mlp_aggr import MlpAggr
 from .arch.tfmlp import TFMlpAggr
+from .arch.gcn_conv import AggConv
 
 class Model(nn.Module):
     '''
@@ -32,11 +33,11 @@ class Model(nn.Module):
 
         # dimensions
         self.dim_hidden = dim_hidden
-        self.dim_mlp = int(dim_hidden/4)
+        self.dim_mlp = 32
 
         # Network 
-        self.aggr_and_strc = TFMlpAggr(self.dim_hidden*1, self.dim_hidden)
-        self.aggr_not_strc = TFMlpAggr(self.dim_hidden*1, self.dim_hidden)
+        self.aggr_and_strc = AggConv(self.dim_hidden*1, self.dim_hidden)
+        self.aggr_not_strc = AggConv(self.dim_hidden*1, self.dim_hidden)
         self.aggr_and_func = TFMlpAggr(self.dim_hidden*2, self.dim_hidden)
         self.aggr_not_func = TFMlpAggr(self.dim_hidden*1, self.dim_hidden)
             
