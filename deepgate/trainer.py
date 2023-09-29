@@ -104,6 +104,8 @@ class Trainer():
     def load(self, path):
         checkpoint = torch.load(path, map_location=lambda storage, loc: storage)
         self.optimizer.load_state_dict(checkpoint['optimizer'])
+        for param_group in self.optimizer.param_groups:
+            self.lr = param_group['lr']
         self.model_epoch = checkpoint['epoch']
         self.model.load(path)
         print('[INFO] Continue training from epoch {:}'.format(self.model_epoch))
