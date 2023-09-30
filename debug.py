@@ -12,7 +12,7 @@ DATA_DIR = './data/train/'
 if __name__ == '__main__':
     circuit_path = os.path.join(DATA_DIR, 'graphs.npz')
     label_path = os.path.join(DATA_DIR, 'labels.npz')
-    num_epochs = 60
+    num_epochs = 50
     # model_path = './exp/default/model_last.pth'
     
     print('[INFO] Parse Dataset')
@@ -24,14 +24,14 @@ if __name__ == '__main__':
     trainer = deepgate.Trainer(model, distributed=True, batch_size=64)
     # trainer.load(model_path)
     print('[INFO] Stage 1 Training ...')
-    trainer.set_training_args(prob_rc_func_weight=[1.0, 0.0, 0.0], lr=1e-4, lr_step=40)
+    trainer.set_training_args(prob_rc_func_weight=[1.0, 0.0, 0.0], lr=1e-4, lr_step=30)
     trainer.train(num_epochs, train_dataset, val_dataset)
     
     print('[INFO] Stage 2 Training ...')
-    trainer.set_training_args(prob_rc_func_weight=[5.0, 1.0, 0.0], lr=1e-4, lr_step=40)
+    trainer.set_training_args(prob_rc_func_weight=[5.0, 1.0, 0.0], lr=1e-4, lr_step=30)
     trainer.train(num_epochs, train_dataset, val_dataset)
     
     print('[INFO] Stage 3 Training ...')
-    trainer.set_training_args(prob_rc_func_weight=[3.0, 1.0, 2.0], lr=1e-4, lr_step=40)
+    trainer.set_training_args(prob_rc_func_weight=[3.0, 1.0, 2.0], lr=1e-4, lr_step=30)
     trainer.train(num_epochs, train_dataset, val_dataset)
     
