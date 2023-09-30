@@ -165,6 +165,7 @@ class Trainer():
         acc_stats = AverageMeter()
         
         # Train
+        print('[INFO] Start training, lr = {:.4f}'.format(self.optimizer.param_groups[0]['lr']))
         for epoch in range(num_epoch): 
             for phase in ['train', 'val']:
                 if phase == 'train':
