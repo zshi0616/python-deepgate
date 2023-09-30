@@ -36,8 +36,8 @@ class Model(nn.Module):
         self.dim_mlp = 32
 
         # Network 
-        self.aggr_and_strc = AggConv(self.dim_hidden*1, self.dim_hidden)
-        self.aggr_not_strc = AggConv(self.dim_hidden*1, self.dim_hidden)
+        self.aggr_and_strc = TFMlpAggr(self.dim_hidden*1, self.dim_hidden)
+        self.aggr_not_strc = TFMlpAggr(self.dim_hidden*1, self.dim_hidden)
         self.aggr_and_func = TFMlpAggr(self.dim_hidden*2, self.dim_hidden)
         self.aggr_not_func = TFMlpAggr(self.dim_hidden*1, self.dim_hidden)
             
@@ -134,6 +134,7 @@ class Model(nn.Module):
     
     def pred_prob(self, hf):
         prob = self.readout_prob(hf)
+        prob = torch.clamp(prob, min=0.0, max=1.0)
         return prob
     
     def load(self, model_path):
