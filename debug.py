@@ -21,13 +21,17 @@ if __name__ == '__main__':
     print('[INFO] Create Model and Trainer')
     model = deepgate.Model()
     
-    trainer = deepgate.Trainer(model, distributed=True)
+    trainer = deepgate.Trainer(model, distributed=True, batch_size=64)
     # trainer.load(model_path)
-    trainer.set_training_args(prob_rc_func_weight=[2.0, 1.0, 0.0], lr=1e-4, lr_step=-1)
     print('[INFO] Stage 1 Training ...')
+    trainer.set_training_args(prob_rc_func_weight=[1.0, 0.0, 0.0], lr=1e-4, lr_step=40)
     trainer.train(num_epochs, train_dataset, val_dataset)
     
     print('[INFO] Stage 2 Training ...')
-    trainer.set_training_args(prob_rc_func_weight=[3.0, 1.0, 2.0], lr=1e-4, lr_step=-1)
+    trainer.set_training_args(prob_rc_func_weight=[5.0, 1.0, 0.0], lr=1e-4, lr_step=40)
+    trainer.train(num_epochs, train_dataset, val_dataset)
+    
+    print('[INFO] Stage 3 Training ...')
+    trainer.set_training_args(prob_rc_func_weight=[3.0, 1.0, 2.0], lr=1e-4, lr_step=40)
     trainer.train(num_epochs, train_dataset, val_dataset)
     
