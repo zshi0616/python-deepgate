@@ -37,7 +37,10 @@ class Trainer():
         self.log_dir = os.path.join(save_dir, training_id)
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
-        self.log_path = os.path.join(self.log_dir, 'log.txt')
+        # Log Path
+        time_str = time.strftime('%Y-%m-%d-%H-%M')
+        self.log_path = os.path.join(self.log_dir, 'log-{}.txt'.format(time_str))
+        
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.distributed = distributed
@@ -207,6 +210,7 @@ class Trainer():
                         Bar.suffix += '|Net: {:.2f}s '.format(batch_time.avg)
                         bar.next()
                 if phase == 'train' and self.model_epoch % 10 == 0:
+                    self.save(os.path.join(self.log_dir, 'model_{:}.pth'.format(self.model_epoch)))
                     self.save(os.path.join(self.log_dir, 'model_last.pth'))
                 if self.local_rank == 0:
                     self.logger.write('{}| Epoch: {:}/{:} |Prob: {:.4f} |RC: {:.4f} |Func: {:.4f} |ACC: {:.4f} |Net: {:.2f}s\n'.format(
@@ -218,7 +222,7 @@ class Trainer():
             if self.lr_step > 0 and self.model_epoch % self.lr_step == 0:
                 self.lr *= 0.1
                 if self.local_rank == 0:
-                    print('[INFO] Learning rate decay to {:.4f}'.format(self.lr))
+                    print('[INFO] Learning rate decay to {}'.format(self.lr))
                 for param_group in self.optimizer.param_groups:
                     param_group['lr'] = self.lr
             
