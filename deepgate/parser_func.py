@@ -55,8 +55,15 @@ def parse_pyg_mlpgate(x, edge_index, tt_dis, min_tt_dis, tt_pair_index, \
 
     edge_index = torch.tensor(edge_index, dtype=torch.long)
     
-    edge_index = edge_index.t().contiguous()
-    forward_level, forward_index, backward_level, backward_index = return_order_info(edge_index, x_torch.size(0))
+    if len(edge_index) == 0:
+        edge_index = edge_index.t().contiguous()
+        forward_index = torch.LongTensor([i for i in range(len(x))])
+        backward_index = torch.LongTensor([i for i in range(len(x))])
+        forward_level = torch.zeros(len(x))
+        backward_level = torch.zeros(len(x))
+    else:
+        edge_index = edge_index.t().contiguous()
+        forward_level, forward_index, backward_level, backward_index = return_order_info(edge_index, x_torch.size(0))
 
     graph = OrderedData(x=x_torch, edge_index=edge_index, 
                         rc_pair_index=rc_pair_index, is_rc=is_rc,
