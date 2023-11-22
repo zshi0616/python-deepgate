@@ -118,9 +118,9 @@ class AigParser():
     
     def read_aiger(self, aig_path):
         circuit_name = os.path.basename(aig_path).split('.')[0]
-        tmp_aag_path = os.path.join(self.tmp_dir, '{}.aag'.format(circuit_name))
-        x_data, edge_index = aig_to_xdata(aig_path, tmp_aag_path)
-        os.remove(tmp_aag_path)
+        # tmp_aag_path = os.path.join(self.tmp_dir, '{}.aag'.format(circuit_name))
+        x_data, edge_index = aig_to_xdata(aig_path)
+        # os.remove(tmp_aag_path)
         # Construct graph object 
         x_data = np.array(x_data)
         edge_index = np.array(edge_index)
