@@ -1,0 +1,15 @@
+aig 21 6 0 1 15
+43
+
+
+
+	i0 pi0
+i1 pi1
+i2 pi2
+i3 pi3
+i4 pi4
+i5 pi5
+o0 po0
+c
+This file was written by ABC on Fri May 20 09:44:25 2022
+For information about AIGER format, refer to http://fmv.jku.at/aiger
