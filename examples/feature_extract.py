@@ -10,7 +10,7 @@ if __name__ == '__main__':
     model = deepgate.Model()    # Create DeepGate
     model.load_pretrained()      # Load pretrained model
     
-    aig_path = './examples/test.aiger'
+    aig_path = './examples/b05_comb.aig'
     print('[INFO] Parse AIG: ', aig_path)
     parser = deepgate.AigParser()   # Create AigParser
     graph = parser.read_aiger(aig_path) # Parse AIG into Graph

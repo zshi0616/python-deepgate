@@ -344,6 +344,8 @@ def aig_to_xdata(aig_filename, gate_to_index={'PI': 0, 'AND': 1, 'NOT': 2}):
         if len(arr) != 1:
             continue
         po_index = int(int(arr[0]) / 2) - 1
+        if po_index < 0:
+            continue
         po_not = int(arr[0]) % 2
         if po_not == 1:
             if has_not[po_index] == -1:

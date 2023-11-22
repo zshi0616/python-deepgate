@@ -4,36 +4,20 @@ from __future__ import print_function
 
 import deepgate
 import torch
-import os
-
-os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
-DATA_DIR = './data/train/'
 
 if __name__ == '__main__':
-    circuit_path = os.path.join(DATA_DIR, 'graphs.npz')
-    label_path = os.path.join(DATA_DIR, 'labels.npz')
-    num_epochs = 50
-    model_path = './exp/default/model_last.pth'
+    print('[INFO] Create and load pretrained DeepGate')
+    model = deepgate.Model()    # Create DeepGate
+    model.load_pretrained()      # Load pretrained model
     
-    print('[INFO] Parse Dataset')
-    dataset = deepgate.NpzParser(DATA_DIR, circuit_path, label_path)
-    train_dataset, val_dataset = dataset.get_dataset()
-    print('[INFO] Create Model and Trainer')
-    model = deepgate.Model()
+    aig_path = './examples/b05_comb.aig'
+    print('[INFO] Parse AIG: ', aig_path)
+    parser = deepgate.AigParser()   # Create AigParser
+    graph = parser.read_aiger(aig_path) # Parse AIG into Graph
+    print('[INFO] Get embeddings ...')
+    hs, hf = model(graph)       # Model inference 
     
-    trainer = deepgate.Trainer(model, distributed=True, batch_size=64)
-    print('[INFO] Load Model from: {}'.format(model_path))
-    trainer.load(model_path)
-    # print('[INFO] Stage 1 Training ...')
-    # trainer.set_training_args(prob_rc_func_weight=[1.0, 0.0, 0.0], lr=1e-4, lr_step=40)
-    # trainer.train(num_epochs, train_dataset, val_dataset)
-    
-    # print('[INFO] Stage 2 Training ...')
-    # trainer.set_training_args(prob_rc_func_weight=[5.0, 1.0, 0.0], lr=1e-4, lr_step=40)
-    # trainer.train(60, train_dataset, val_dataset)
-    
-    print('[INFO] Stage 3 Training ...')
-    trainer.set_training_args(prob_rc_func_weight=[6.0, 1.0, 3.0], lr=1e-4, lr_step=30)
-    trainer.train(num_epochs, train_dataset, val_dataset)
-    
+    # hs: structural embeddings, hf: functional embeddings
+    # hs/hf: [N, D]. N: number of gates, D: embedding dimension (default: 128)
+    print(hs.shape, hf.shape)   
     
