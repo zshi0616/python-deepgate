@@ -9,7 +9,7 @@ from .utils.dag_utils import return_order_info
 
 class OrderedData(Data):
     def __init__(self, edge_index=None, x=None, y=None, \
-                 tt_pair_index=None, tt_dis=None, min_tt_dis=None, \
+                 tt_pair_index=None, tt_dis=None, \
                  rc_pair_index=None, is_rc=None, \
                  forward_level=None, forward_index=None, backward_level=None, backward_index=None):
         super().__init__()
@@ -18,7 +18,6 @@ class OrderedData(Data):
         self.x = x
         self.y = y
         self.tt_dis = tt_dis
-        self.min_tt_dis = min_tt_dis
         self.forward_level = forward_level
         self.forward_index = forward_index
         self.backward_level = backward_level
@@ -40,7 +39,7 @@ class OrderedData(Data):
         else:
             return 0
 
-def parse_pyg_mlpgate(x, edge_index, tt_dis, min_tt_dis, tt_pair_index, \
+def parse_pyg_mlpgate(x, edge_index, tt_dis, tt_pair_index, \
                       y, rc_pair_index, is_rc, \
                       num_gate_types=3):
     x_torch = construct_node_feature(x, num_gate_types)
@@ -51,7 +50,6 @@ def parse_pyg_mlpgate(x, edge_index, tt_dis, min_tt_dis, tt_pair_index, \
     rc_pair_index = rc_pair_index.t().contiguous()
     tt_dis = torch.tensor(tt_dis)
     is_rc = torch.tensor(is_rc, dtype=torch.float32).unsqueeze(1)
-    min_tt_dis = torch.tensor(min_tt_dis)
 
     edge_index = torch.tensor(edge_index, dtype=torch.long)
     
@@ -67,7 +65,7 @@ def parse_pyg_mlpgate(x, edge_index, tt_dis, min_tt_dis, tt_pair_index, \
 
     graph = OrderedData(x=x_torch, edge_index=edge_index, 
                         rc_pair_index=rc_pair_index, is_rc=is_rc,
-                        tt_pair_index=tt_pair_index, tt_dis=tt_dis, min_tt_dis=min_tt_dis, 
+                        tt_pair_index=tt_pair_index, tt_dis=tt_dis, 
                         forward_level=forward_level, forward_index=forward_index, 
                         backward_level=backward_level, backward_index=backward_index)
     graph.use_edge_attr = False

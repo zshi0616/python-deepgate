@@ -80,7 +80,6 @@ class NpzParser():
                 edge_index = circuits[cir_name]["edge_index"]
 
                 tt_dis = labels[cir_name]['tt_dis']
-                min_tt_dis = labels[cir_name]['min_tt_dis']
                 tt_pair_index = labels[cir_name]['tt_pair_index']
                 prob = labels[cir_name]['prob']
                 
@@ -96,7 +95,7 @@ class NpzParser():
                 # check the gate types
                 # assert (x[:, 1].max() == (len(self.args.gate_to_index)) - 1), 'The gate types are not consistent.'
                 graph = parse_pyg_mlpgate(
-                    x, edge_index, tt_dis, min_tt_dis, tt_pair_index, 
+                    x, edge_index, tt_dis, tt_pair_index, 
                     prob, rc_pair_index, is_rc
                 )
                 graph.name = cir_name
