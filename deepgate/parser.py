@@ -124,13 +124,12 @@ class AigParser():
         x_data = np.array(x_data)
         edge_index = np.array(edge_index)
         tt_dis = []
-        min_tt_dis = []
         tt_pair_index = []
         prob = [0] * len(x_data)
         rc_pair_index = []
         is_rc = []
         graph = parse_pyg_mlpgate(
-            x_data, edge_index, tt_dis, min_tt_dis, tt_pair_index, prob, rc_pair_index, is_rc
+            x_data, edge_index, tt_dis, tt_pair_index, prob, rc_pair_index, is_rc
         )
         graph.name = circuit_name
         graph.PIs = graph.forward_index[(graph['forward_level'] == 0) & (graph['backward_level'] != 0)]
