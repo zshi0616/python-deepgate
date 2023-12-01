@@ -113,6 +113,14 @@ class Trainer():
         self.model.load(path)
         print('[INFO] Continue training from epoch {:}'.format(self.model_epoch))
         return path
+    
+    def resume(self):
+        model_path = os.path.join(self.log_dir, 'model_last.pth')
+        if os.path.exists(model_path):
+            self.load(model_path)
+            return True
+        else:
+            return False
         
     def run_batch(self, batch):
         hs, hf = self.model(batch)
