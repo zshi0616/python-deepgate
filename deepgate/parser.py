@@ -15,7 +15,7 @@ from torch_geometric.loader import DataLoader
 
 from .utils.data_utils import read_npz_file
 from .utils.aiger_utils import aig_to_xdata
-from .utils.circuit_utils import get_fanin_fanout
+from .utils.circuit_utils import get_fanin_fanout, read_file, add_node_index, feature_gen_connect
 from .parser_func import *
 
 class NpzParser():
@@ -110,10 +110,8 @@ class NpzParser():
             return f'{self.name}({len(self)})'
 
 class AigParser():
-    def __init__(self, tmp_dir='./tmp'):
-        self.tmp_dir = tmp_dir
-        if not os.path.exists(tmp_dir):
-            os.makedirs(tmp_dir)
+    def __init__(self):
+        pass
     
     def read_aiger(self, aig_path):
         circuit_name = os.path.basename(aig_path).split('.')[0]
@@ -138,4 +136,33 @@ class AigParser():
         
         return graph        
         
+class BenchParser():
+    def __init__(self, gate_to_index={'PI': 0, 'AND': 1, 'NOT': 2}):
+        self.gate_to_index = gate_to_index
+        pass
     
+    def read_bench(self, bench_path):
+        circuit_name = os.path.basename(bench_path).split('.')[0]
+        x_data = read_file(bench_path)
+        x_data, num_nodes, _ = add_node_index(x_data)
+        x_data, edge_index = feature_gen_connect(x_data, self.gate_to_index)
+        for idx in range(len(x_data)):
+            x_data[idx] = [idx, int(x_data[idx][1])]
+        # os.remove(tmp_aag_path)
+        # Construct graph object 
+        x_data = np.array(x_data)
+        edge_index = np.array(edge_index)
+        tt_dis = []
+        tt_pair_index = []
+        prob = [0] * len(x_data)
+        rc_pair_index = []
+        is_rc = []
+        graph = parse_pyg_mlpgate(
+            x_data, edge_index, tt_dis, tt_pair_index, prob, rc_pair_index, is_rc
+        )
+        graph.name = circuit_name
+        graph.PIs = graph.forward_index[(graph['forward_level'] == 0) & (graph['backward_level'] != 0)]
+        graph.POs = graph.backward_index[(graph['backward_level'] == 0) & (graph['forward_level'] != 0)]
+        graph.no_connect = graph.forward_index[(graph['forward_level'] == 0) & (graph['backward_level'] == 0)]
+        
+        return graph       

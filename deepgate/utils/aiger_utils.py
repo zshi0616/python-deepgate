@@ -293,6 +293,8 @@ def aig_to_xdata(aig_filename, gate_to_index={'PI': 0, 'AND': 1, 'NOT': 2}):
     n_inputs = eval(header[2])
     n_outputs = eval(header[4])
     n_and = eval(header[5])
+    no_latch = eval(header[3])
+    assert no_latch == 0, 'The AIG has latches.'
     # if n_outputs != 1 or n_variables != (n_inputs + n_and) or n_variables == n_inputs:
     #     return [], []
     # assert n_outputs == 1, 'The AIG has multiple outputs.'
