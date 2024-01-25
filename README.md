@@ -1,9 +1,7 @@
 # DeepGate2: Functionality-Aware Circuit Representation Learning
 
 Official code repository for the paper:  
-[**DeepGate2: Functionality-Aware Circuit Representation Learning**](https://arxiv.org/abs/2305.16373)
-
-Accepted by ICCAD23, Thank you all for support !!!
+[**DeepGate2: Functionality-Aware Circuit Representation Learning**](https://ieeexplore.ieee.org/document/10323798)
 
 Authors: Zhengyuan Shi, Hongyang Pan, Sadaf Khan, Min Li, Yi Liu, Junhua Huang, Hui-Ling Zhen, Mingxuan Yuan, Zhufei Chu and Qiang Xu
 
@@ -52,10 +50,14 @@ For Bench format, see `examples/feature_extract_bench.py`
 ## Cite DeepGate2
 If DeepGate Family could help your project, please cite our work: 
 ```sh
-@article{shi2023deepgate2,
-  title={DeepGate2: Functionality-Aware Circuit Representation Learning},
+@INPROCEEDINGS{10323798,
   author={Shi, Zhengyuan and Pan, Hongyang and Khan, Sadaf and Li, Min and Liu, Yi and Huang, Junhua and Zhen, Hui-Ling and Yuan, Mingxuan and Chu, Zhufei and Xu, Qiang},
-  journal={arXiv preprint arXiv:2305.16373},
-  year={2023}
-}
+  booktitle={2023 IEEE/ACM International Conference on Computer Aided Design (ICCAD)}, 
+  title={DeepGate2: Functionality-Aware Circuit Representation Learning}, 
+  year={2023},
+  volume={},
+  number={},
+  pages={1-9},
+  keywords={Representation learning;Training;Design automation;Computational modeling;Logic gates;Predictive models;Graph neural networks},
+  doi={10.1109/ICCAD57390.2023.10323798}}
 ```
