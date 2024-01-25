@@ -32,8 +32,9 @@ NUM_PROC=4
 python3 -m torch.distributed.launch --nproc_per_node=$NUM_PROC examples/train.py
 ```
 
-## Generate AIG Embedding Vectors 
-see `examples/feature_extract.py`
+## Generate Embedding Vectors 
+This repo supports AIG and Bench format. 
+For AIG format, see `examples/feature_extract.py`
 ```python
 import deepgate
 model = deepgate.Model()    # Create DeepGate
@@ -45,6 +46,8 @@ hs, hf = model(graph)       # Model inference
 # hs/hf: [N, D]. N: number of gates, D: embedding dimension (default: 128)
 print(hs.shape, hf.shape)   
 ```
+
+For Bench format, see `examples/feature_extract_bench.py`
 
 ## Cite DeepGate2
 If DeepGate Family could help your project, please cite our work: 
