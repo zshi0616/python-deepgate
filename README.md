@@ -58,6 +58,5 @@ If DeepGate Family could help your project, please cite our work:
   volume={},
   number={},
   pages={1-9},
-  keywords={Representation learning;Training;Design automation;Computational modeling;Logic gates;Predictive models;Graph neural networks},
   doi={10.1109/ICCAD57390.2023.10323798}}
 ```

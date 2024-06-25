@@ -35,7 +35,6 @@ class TFMlpAggr(MessagePassing):
         return self.propagate(edge_index, x=x, edge_attr=edge_attr)
 
     def message(self, x_i, x_j, edge_attr: Optional[Tensor], index: Tensor, ptr: OptTensor, size_i: Optional[int]):
-    # def message(self, x_i, x_j, edge_attr, index: Tensor, ptr: Optensor, size_i: Optional[int]):
         # h_i: query, h_j: key 
         h_attn_q_i = self.msg_q(x_i)
         h_attn = self.msg_k(x_j)
