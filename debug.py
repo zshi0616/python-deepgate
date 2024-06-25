@@ -1,31 +1,26 @@
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+import deepgate 
+import torch 
+import torch.nn.functional as F
 
-import deepgate
-import torch
-import time 
+import sys
+sys.setrecursionlimit(1000000)
 
-if __name__ == '__main__':
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print('[INFO] Create and load pretrained DeepGate')
-    print('[INFO] Device: ', device)
-    model = deepgate.Model()    # Create DeepGate
-    model.load_pretrained()      # Load pretrained model
-    model = model.to(device)
+if __name__ == '__main__': 
+    print('[INFO] Create and load pretrained DeepGate') 
+    model = deepgate.Model()    # Create DeepGate 
+    model.load_pretrained()      # Load pretrained model 
+    parser = deepgate.AigParser()   # Create AigParser 
     
-    bench_path = './tmp/test.bench'
-    print('[INFO] Parse Bench: ', bench_path)
-    parser = deepgate.BenchParser()   # Create BenchParser
-
-    graph = parser.read_bench(bench_path) # Parse Bench into Graph
-    graph = graph.to(device)
-    print('[INFO] Get embeddings ...')
-    start_time = time.time()
-    hs, hf = model(graph)       # Model inference 
-    end_time = time.time()
+    aig_1_path = './tmp/h29.aiger'
+    g1 = parser.read_aiger(aig_1_path)
+    hs1, hf1 = model(g1)
+    po1 = hf1[g1.POs]
     
-    # hs: structural embeddings, hf: functional embeddings
-    # hs/hf: [N, D]. N: number of gates, D: embedding dimension (default: 128)
-    print(hs.shape, hf.shape)   
-    print('Time: ', end_time - start_time)
+    aig_2_path = './tmp/h29_02.aiger'
+    g2 = parser.read_aiger(aig_2_path)
+    hs2, hf2 = model(g2)
+    po2 = hf2[g2.POs]
+    
+    sim = F.cosine_similarity(po1, po2, dim=1)
+    
+    print(sim)

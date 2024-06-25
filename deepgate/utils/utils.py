@@ -176,20 +176,19 @@ def generate_orthogonal_vectors(n, dim):
         for i in range(n):
             vectors[i] = vectors[i] / np.linalg.norm(vectors[i])
 
-    # calculate the max cosine similarity between any two vectors
-    max_cos_sim = 0
-    for i in range(n):
-        for j in range(i+1, n):
-            vi = vectors[i]
-            vj = vectors[j]
-            cos_sim = np.dot(vi, vj) / (np.linalg.norm(vi) * np.linalg.norm(vj))
-            if cos_sim > max_cos_sim:
-                max_cos_sim = cos_sim
+    # # calculate the max cosine similarity between any two vectors
+    # max_cos_sim = 0
+    # for i in range(n):
+    #     for j in range(i+1, n):
+    #         vi = vectors[i]
+    #         vj = vectors[j]
+    #         cos_sim = np.dot(vi, vj) / (np.linalg.norm(vi) * np.linalg.norm(vj))
+    #         if cos_sim > max_cos_sim:
+    #             max_cos_sim = cos_sim
 
-    return vectors, max_cos_sim
+    return vectors
 
 def generate_hs_init(G, hs, no_dim):
-    max_sim = 0
     if G.batch == None:
         batch_size = 1
     else:
@@ -200,9 +199,7 @@ def generate_hs_init(G, hs, no_dim):
         else:
             pi_mask = (G.batch == batch_idx) & (G.forward_level == 0)
         pi_node = G.forward_index[pi_mask]
-        pi_vec, batch_max_sim = generate_orthogonal_vectors(len(pi_node), no_dim)
-        if batch_max_sim > max_sim:
-            max_sim = batch_max_sim
+        pi_vec = generate_orthogonal_vectors(len(pi_node), no_dim)
         hs[pi_node] = torch.tensor(pi_vec, dtype=torch.float)
     
-    return hs, max_sim
+    return hs

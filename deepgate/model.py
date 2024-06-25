@@ -64,10 +64,9 @@ class Model(nn.Module):
         # initialize the structure hidden state
         if self.enable_encode:
             hs = torch.zeros(num_nodes, self.dim_hidden)
-            hs, max_sim = generate_hs_init(G, hs, self.dim_hidden)
+            hs = generate_hs_init(G, hs, self.dim_hidden)
         else:
             hs = torch.zeros(num_nodes, self.dim_hidden)
-            max_sim = 0
         
         # initialize the function hidden state
         # hf = self.hf_emd_int(self.one).view(1, -1) # (1 x 1 x dim_hidden)
