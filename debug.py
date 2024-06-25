@@ -11,6 +11,10 @@ if __name__ == '__main__':
     model.load_pretrained()      # Load pretrained model 
     parser = deepgate.AigParser()   # Create AigParser 
     
+    tmp_path = './tmp/miter.aig'
+    g = parser.read_aiger(tmp_path)
+    hs, hf = model(g)
+    
     aig_1_path = './tmp/h29.aiger'
     g1 = parser.read_aiger(aig_1_path)
     hs1, hf1 = model(g1)
